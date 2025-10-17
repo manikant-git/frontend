@@ -1,0 +1,45 @@
+name: frontend-cicd
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: build
+        run: go build .
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-pretest
+          path: ./
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-pretest
+          path: ./
+
+      - name: run unit test
+        run: go test ./...
